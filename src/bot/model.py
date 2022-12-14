@@ -1,5 +1,6 @@
 import model_utils as mdu
 
+
 class Model():
     def __init__(self, checkpoint: str):
         (self.model, self.tokenizer, self.memory) = mdu.init_model(checkpoint)

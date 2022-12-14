@@ -8,6 +8,7 @@ model_class = model.Model("koolKat/iro_model")
 reply_possibility = 0.1
 bot_id = 5777831507
 
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     rd = random.random()
     text = update.message.text

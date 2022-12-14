@@ -8,6 +8,7 @@ def init_model(checkpoint: str):
     history = torch.zeros((1, 0), dtype=torch.int)
     return (model, tokenizer, history)
 
+
 def predict2(model, tokenizer, messages_history):
     chat_history_ids = torch.zeros((1, 0), dtype=torch.int)
     N = 5
@@ -45,54 +46,6 @@ def predict2(model, tokenizer, messages_history):
     # print(f"===> SlavaGPT-2:  {decoded}")
 
     return decoded
-
-def predict_answer(input: str, model, tokenizer, history, max_size):
-    chat_history_ids = history
-
-    new_user_input_ids = tokenizer.encode(f"|0|{get_length_param(input, tokenizer)}|" \
-                                          + input + tokenizer.eos_token, return_tensors="pt")
-    chat_history_ids = torch.cat([chat_history_ids, new_user_input_ids], dim=-1)
-
-    next_len = "3"  #input("Exp. len?(-/1/2/3): ")
-    # encode the new user input, add parameters and return a tensor in Pytorch
-    new_user_input_ids = tokenizer.encode(f"|1|{next_len}|", return_tensors="pt")
-    # append the new user input tokens to the chat history
-    chat_history_ids = torch.cat([chat_history_ids, new_user_input_ids], dim=-1).to("cpu")
-    chat_history_ids = adjust_seq_size(chat_history_ids, max_size)
-    input_len = chat_history_ids.shape[-1]
-
-    print(tokenizer.decode(chat_history_ids[:, input_len:][0], skip_special_tokens=True))
-    print("Seq size = " + str(chat_history_ids.shape[1]))
-    print("Input len = " + str(input_len))
-    chat_history_ids = model.generate(
-        chat_history_ids,
-        num_return_sequences=1,                     # use for more variants, but have to print [i]
-        max_length=512,
-        no_repeat_ngram_size=3,
-        do_sample=True,
-        top_k=100,
-        top_p=0.9,
-        temperature = 0.6,                        # 0 for greedy
-        # mask_token_id=tokenizer.mask_token_id,
-        eos_token_id=tokenizer.eos_token_id,
-        # unk_token_id=tokenizer.unk_token_id,
-        pad_token_id=tokenizer.pad_token_id,
-        # device='cpu'
-    )
-
-    # pretty print last ouput tokens from bot
-    decoded = tokenizer.decode(chat_history_ids[:, input_len:][0], skip_special_tokens=True)
-    # print(f"===> SlavaGPT-2:  {decoded}")
-
-    new_history = torch.cat([history, chat_history_ids], dim=-1)
-    return (decoded, new_history)
-
-
-def adjust_seq_size(tensor, max_size):
-    if tensor.shape[1] >= max_size:
-        result = tensor[:, :max_size]
-        return result
-    return tensor
 
 
 def get_length_param(text: str, tokenizer) -> str:
